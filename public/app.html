@@ -1,0 +1,110 @@
+<!DOCTYPE HTML>
+<html manifest="cache.manifest">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width; initial-scale=1.0; maximum-scale=1.0; user-scalable=0;"/>
+
+    <link rel="apple-touch-icon" href="/img/negyeshatoslogo.png"/> 
+    <meta name="apple-mobile-web-app-capable" content="yes" /> 
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+
+    <script src="zepto.min.js""></script>
+    <script src="underscore-min.js""></script>
+    <script src="backbone-min.js"></script>
+    <script src="bkv.js"></script>
+    <script src="http://maps.google.com/maps/api/js?sensor=true"></script>
+    <script src="infobubble-compiled.js"></script>
+    <script src="geokod.js"></script>
+    <script src="jquery.timeago.js""></script>
+
+    <script src="negyeshatos.js"></script>
+<link rel="stylesheet" href="style.css" type="text/css" media="screen" charset="utf-8">
+  <style type="text/css" media="screen">
+
+  </style>
+
+  </head>
+  <body>
+
+    <article id="elsolepes" class="current">
+    <div id="ittvagyok"></div>
+    <!--<div id="header"><h1>Négyeshatos</h1>-->
+    </div>
+    <form id="quickbox" onsubmit="return false">
+      <div class="wrap">
+      <a href="#terkep" class="bal terkepgomb"><img src="img/globe-36.png"></a>
+      <input type="text" class="" placeholder="Úticél">
+      <a href="#" class="jobb"><img src="img/06-magnify.png"></a>
+    </div>
+    </form>
+    <section id="foursquare">
+      <div id="venuesList"></div>
+    </section>
+    </article>
+    <article id="map">
+    <header>
+    <a href="#barataim" class="left awesome red">vissza</a>
+    bökj az úticélodra:
+    </header>
+    <div id="map_canvas"></div>
+    </article>
+
+    <article id="masodiklepes">
+    <div id="utvonaldoboz">
+    </div>
+    </article>
+</body>
+
+<!-- template-ek. a lehető legkevésbé otromba megoldás ide belehányni, de ha tudsz jobbat, mondd -->
+<script type="text/xunderscore-tmpl" id="loginTemplate">
+  <div id="loginbox">
+    <p>Jelentkezz be Foursquare-en, hogy lásd, merre járnak a barátaid:</p>
+    <a class="foursquare_login" href="https://foursquare.com/oauth2/authenticate?client_id=<%= client_id %>&response_type=token&display=touch&redirect_uri=<%= window.location.href %>"><img src="img/signinwith-foursquare.png"></a>
+<p><i>A térkép és a szöveges keresőcuccos természetesen enélkül is használható.</i></p>
+</div>
+</script>
+<script type="text/xunderscore-tmpl" id="venueTemplate">
+  <span class="name"><%= name %></span>
+  <time class="timeago" datetime=<%= JSON.stringify(new Date(lastSeen*1000)) %>><%= lastSeen*1000 %></time>
+  <div class="here">
+    <% _.each(here, function(friend) { %>
+    <img class="avatar" src="<%= friend.photo %>">
+    <% }); %>
+  </div>
+</script>
+
+  <script type="text/xunderscore-tmpl" id="venuesTemplate">
+  <li role="heading" class="divider">Egyéb úticél</li>
+  <li class="venue"><a href="javascript:mashovamesz()">Máshova mennék, beírom</a></li>
+</ul>
+
+  </script>
+  <script type="text/xunderscore-tmpl" id="routeTemplate">
+    <header>
+    <a href="#barataim" class="left awesome red">vissza</a>
+    <h1><%= decodeURIComponent(name) %></h1>
+    </header>
+    <% _.each(route.m_arrSubs, function(sub)  { %>
+      <% if (sub.m_arrBkvLines.length) { %>
+        <ul class="sub">
+        <% _.each(sub.m_arrBkvLines, function(line) { %>
+          <li>
+            <a href="<%= line.m_strLink %>" class="bkvJarat <%= line.m_strClass %>"><%= line.m_strName %></a>
+            <%= sub.m_strStopFrom %> &rarr; <%= sub.m_strStopTo %> <i>(<%= line.m_iStops %> megálló, <%= sub.m_iTravelMinutes %> perc)</i>
+          </li>
+        <% }); %>
+        </ul>
+      <% } else {%>
+        <% if (sub.m_iLength >20 && sub.m_strName) { %>
+          <ul class="sub walk">
+            <li>
+              <%= sub.m_strName %> <i>(<%= sub.m_iLength %> m)</i>
+            </li>
+          </ul>
+        <% } %>
+      <% } %>
+    <% }); %>
+  <div class="summary"><p>Összesen <%= route.m_iLength / 1000 %> km, <%= route.m_iTravelMinutes %> perc</p>
+    <!--<p><a class="yellow large awesome" href="#terkep">térképnézet</a></p></div>-->
+  </script>
+</html>

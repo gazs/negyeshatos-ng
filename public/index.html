@@ -1,0 +1,73 @@
+<html>
+  <head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+    <title>Négyeshatos: Foursquare + BKV = &lt;3</title>
+    <script src="zepto.min.js"></script>
+<style>
+  body { font-family: Helvetica, Verdana, Arial, sans-serif;}
+  #kontent { width: 800px;margin:auto; }
+  h1, p {  }
+  h1 { font-size:36px; color:#16214d }
+  p { font-size:24px; color:#888;}
+  p a { text-decoration:none; color: #2398C9; font-weight:bold }
+  #footer {text-align:center; margin-top:100px; padding:5px; }
+  #footer, #footer a {color:#ccc; }
+  img { border-style:none }
+  .jimmywales {
+    margin: 0 auto;
+    width:400px;
+    background: url("/img/jimbo.jpg") #eee no-repeat;
+    border: 1px solid #aaa;
+    height: 100px;
+    padding-left: 140px;
+    font-size:20px;
+    font-weight:bold;
+    font-family: sans-serif;
+  }
+  .jimmywales a {
+    color:black;
+    text-decoration:none
+  }
+
+</style>
+<script type="text/javascript" charset="utf-8">
+  $(document).ready(function(){
+    $("#bla").bind('click', function(){
+      event.preventDefault();
+      window.open("/app.html", "Négyeshatos", "width=320,height=480,resizable=no");
+    })
+  })
+</script>
+</head>
+<body>
+
+<div id="kontent">
+<!--div class="jimmywales"> 
+  <a href="appeal.html">Kérlek olvasd el Körtesi Gáspár Négyeshatos-alapító személyes felhívását!</a>
+</div--> 
+<img src="/img/2-nagy.png" style="padding:20px; float:left">
+<div style="padding:20px;">
+  <h1>Négyeshatos</h1>
+<p>Az eszköz tudja, <a href="http://dev.w3.org/geo/api/spec-source.html">hol vagy</a>; az eszköz tudja, <a href="http://foursquare.com">hol vannak a barátaid</a>; az eszköz tudja, <a href="http://bkv.hu">hogy járnak a buszok</a>; te tudod, hova akarsz menni. Egyszerűbb nem is lehetne. Questions?</p> 
+<p><a href="/app.html" id="bla">Próbáld ki most, akár a böngésződből is!</a></p>
+</div>
+</div>
+
+<div id="footer">
+  <a href="mailto:gazs@bergengocia.net">Gazs</a> @ <a href="http://bergengocia.net">Bergengocia.net</a>
+</div>
+<script type="text/javascript">
+
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-19440499-1']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+
+</script>
+</body>
+</html>
