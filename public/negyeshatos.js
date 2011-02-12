@@ -14,9 +14,7 @@
     return -1;
   };
   window.applicationCache.addEventListener('updateready', function() {
-    if (confirm('Frissítés elérhető az alkalmazáshoz. Töltsem le most?')) {
-      return window.location.reload();
-    }
+    return window.location.reload();
   }, false);
   client_ids = {
     'localhost:3000': 'LKA10PKSU3VSYT1IONJK53LUAEEZQJQEZLZFTVG13K15FSWR',

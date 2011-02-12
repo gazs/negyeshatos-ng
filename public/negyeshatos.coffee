@@ -1,6 +1,5 @@
 window.applicationCache.addEventListener 'updateready', ->
-  if confirm 'Frissítés elérhető az alkalmazáshoz. Töltsem le most?'
-    window.location.reload()
+  window.location.reload()
 , false
 
 
