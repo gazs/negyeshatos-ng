@@ -1,3 +1,7 @@
+window.applicationCache.addEventListener 'updateready', ->
+  if confirm 'Frissítés elérhető az alkalmazáshoz. Töltsem le most?'
+    window.location.reload()
+, false
 
 
 client_ids =
@@ -386,8 +390,4 @@ $(document).ready ->
     {enableHighAccuracy: true}
   )
   
-  window.applicationCache.addEventListener 'updateReady', ->
-    if confirm 'Frissítés elérhető az alkalmazáshoz. Töltsem le most?'
-      window.location.reload()
-  , false
 
