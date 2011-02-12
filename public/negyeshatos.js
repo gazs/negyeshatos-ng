@@ -13,6 +13,11 @@
     }
     return -1;
   };
+  window.applicationCache.addEventListener('updateready', function() {
+    if (confirm('Frissítés elérhető az alkalmazáshoz. Töltsem le most?')) {
+      return window.location.reload();
+    }
+  }, false);
   client_ids = {
     'localhost:3000': 'LKA10PKSU3VSYT1IONJK53LUAEEZQJQEZLZFTVG13K15FSWR',
     'negyeshatos.com': 'TR01LUT4VNRMYIOUBL0IG214MMUDBL3K0E0O14JTVTBBSJOP'
@@ -518,7 +523,7 @@
     if ($.os.android) {
       $('body').addClass('android');
     }
-    navigator.geolocation.getCurrentPosition(function(position) {
+    return navigator.geolocation.getCurrentPosition(function(position) {
       return app.ittvagyok.setLocation({
         lat: position.coords.latitude,
         lng: position.coords.longitude,
@@ -529,10 +534,5 @@
     }, {
       enableHighAccuracy: true
     });
-    return window.applicationCache.addEventListener('updateReady', function() {
-      if (confirm('Frissítés elérhető az alkalmazáshoz. Töltsem le most?')) {
-        return window.location.reload();
-      }
-    }, false);
   });
 }).call(this);

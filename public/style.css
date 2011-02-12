@@ -9,7 +9,6 @@ body {
   height:100%;
   width:100%;
   overflow-x:hidden;
--webkit-tap-highlight-color: rgba(0,0,0,0)
 
 }
 
@@ -168,6 +167,9 @@ img.avatar {
   text-align:center;
   line-height:40px;
   vertical-align:middle;
+}
+.venueList {
+  -webkit-tap-highlight-color: rgba(0,0,0,0)
 }
 .venue {
   border-top:1px solid #ccc;
