@@ -19,7 +19,7 @@ app = express.createServer(
   #express.logger(),
   express.compiler({src: root, enable: ['sass', 'coffeescript']}),
   express.staticProvider(root)
-  express.cacheManifest(root)
+  #express.cacheManifest(root)
   express.cache()
   express.gzip()
   #assetManager(assetManagerGroups)
