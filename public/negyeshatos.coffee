@@ -386,9 +386,8 @@ $(document).ready ->
     {enableHighAccuracy: true}
   )
   
-  $(applicationCache).bind 'updateReady', ->
+  window.applicationCache.addEventListener 'updateReady', ->
     if confirm 'Frissítés elérhető az alkalmazáshoz. Töltsem le most?'
-      window.applicationCache.update()
-      window.applicationCache.swapCache()
       window.location.reload()
+  , false
 

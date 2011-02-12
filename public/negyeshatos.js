@@ -529,12 +529,10 @@
     }, {
       enableHighAccuracy: true
     });
-    return $(applicationCache).bind('updateReady', function() {
+    return window.applicationCache.addEventListener('updateReady', function() {
       if (confirm('Frissítés elérhető az alkalmazáshoz. Töltsem le most?')) {
-        window.applicationCache.update();
-        window.applicationCache.swapCache();
         return window.location.reload();
       }
-    });
+    }, false);
   });
 }).call(this);
