@@ -124,11 +124,7 @@
       VenueView.prototype.className = 'venue';
       VenueView.prototype.template = _.template($('#venueTemplate').html());
       VenueView.prototype.events = {
-        'click': 'action',
-        'mousedown': 'toggle',
-        'mouseup': 'toggle',
-        'touchstart': 'toggle',
-        'touchend': 'toggle'
+        'click': 'action'
       };
       VenueView.prototype.toggle = function() {
         return $(this.el).toggleClass('clicked');
@@ -164,7 +160,14 @@
         return this.$('#venuesList ul').append(venue.render().el);
       };
       VenueList.prototype.render = function() {
-        $(this.el).html("<ul id='venues'></ul>");
+        var myscroller;
+        $(this.el).html("<div id='scroller'><ul id='venues'></ul></div>");
+        $(this.el).css({
+          height: window.innerHeight - 78 + 'px'
+        });
+        myscroller = new iScroll('scroller', {
+          desktopCompatibility: true
+        });
         this.collection.each(this.addVenueToList);
         $('time.timeago').timeago();
         return this;

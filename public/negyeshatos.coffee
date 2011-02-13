@@ -105,10 +105,10 @@ $(document).ready ->
     template: _.template($('#venueTemplate').html())
     events:
       'click': 'action'
-      'mousedown': 'toggle' #TODO: nem lehet ezt kevésbé redundánsan?
-      'mouseup': 'toggle'
-      'touchstart': 'toggle'
-      'touchend': 'toggle'
+      #'mousedown': 'toggle' #TODO: nem lehet ezt kevésbé redundánsan?
+      #'mouseup': 'toggle'
+      #'touchstart': 'toggle'
+      #'touchend': 'toggle'
     toggle: ->
       $(@el).toggleClass 'clicked'
     action: ->
@@ -132,7 +132,14 @@ $(document).ready ->
         model: v
       @.$('#venuesList ul').append(venue.render().el)
     render: ->
-      $(@el).html("<ul id='venues'></ul>")
+      $(@el).html("<div id='scroller'><ul id='venues'></ul></div>")
+      $(@el).css
+        height: window.innerHeight - 78 + 'px'
+      myscroller = new iScroll 'scroller',
+        desktopCompatibility: true
+      document.addEventListener 'touchmove', (e) ->
+        e.preventDefault()
+      , false
       @collection.each(@addVenueToList)
       $('time.timeago').timeago()
       @

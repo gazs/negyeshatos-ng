@@ -17,6 +17,7 @@
     <script src="infobubble-compiled.js"></script>
     <script src="geokod.js"></script>
     <script src="jquery.timeago.js""></script>
+    <script src="iscroll-min.js""></script>
 
     <script src="negyeshatos.js"></script>
 <link rel="stylesheet" href="style.css" type="text/css" media="screen" charset="utf-8">
@@ -44,7 +45,7 @@
     </article>
     <article id="map">
     <header>
-    <a href="#barataim" class="left awesome red">vissza</a>
+    <a href="#" class="left awesome red">vissza</a>
     bökj az úticélodra:
     </header>
     <div id="map_canvas"></div>
@@ -82,7 +83,7 @@
   </script>
   <script type="text/xunderscore-tmpl" id="routeTemplate">
     <header>
-    <a href="#barataim" class="left awesome red">vissza</a>
+    <a href="#" class="left awesome red">vissza</a>
     <h1><%= decodeURIComponent(name) %></h1>
     </header>
     <% _.each(route.m_arrSubs, function(sub)  { %>
