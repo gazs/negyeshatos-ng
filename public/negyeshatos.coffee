@@ -135,7 +135,6 @@ $(document).ready ->
       $(@el).html("<div id='scroller'><ul id='venues'></ul></div>")
       $(@el).css
         height: (window.innerHeight - 78) + 'px'
-      alert window.innerHeight
       myscroller = new iScroll 'scroller',
         desktopCompatibility: true
       document.addEventListener 'touchmove', (e) ->
@@ -190,7 +189,7 @@ $(document).ready ->
         if @map.getBounds().contains @model.GlatLng()
           @map.setCenter @model.GlatLng()
       catch e
-        console.error e
+        #console.error e
       super
   
   # Piros gombostű formájú marker, amit ha leraksz, infobubble-t nyit, benne a POI címével
@@ -226,6 +225,7 @@ $(document).ready ->
   # csúnyáncsúnyán be tudnak kavarni!
   # @mapId, @collection(kétpoi)
   class Map extends Backbone.View
+    mapId: 'map_canvas'
     initialize: ->
       _.bindAll @, 'render'
       @map = new google.maps.Map document.getElementById(@mapId),
@@ -342,7 +342,6 @@ $(document).ready ->
       mozogj '#map'
       # Ne csináld újra a térképet 
       app.terkepnezet ||= new Map
-        mapId: 'map_canvas'
         collection: app.ketpoi
       # Ha nincs markerem, akkor ne próbáld átrakni sehova.
       unless app.terkepnezet.mylocationmarker.marker.getPosition()
@@ -353,7 +352,6 @@ $(document).ready ->
         pageLoading()
       catch e
         if localStorage.utvonal?
-          console.log("van útvonal cache-ben")
           $('#utvonaldoboz').html localStorage.utvonal
           mozogj '#masodiklepes'
         else

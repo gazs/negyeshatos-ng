@@ -163,7 +163,7 @@
         var myscroller;
         $(this.el).html("<div id='scroller'><ul id='venues'></ul></div>");
         $(this.el).css({
-          height: window.innerHeight - 78 + 'px'
+          height: (window.innerHeight - 78) + 'px'
         });
         myscroller = new iScroll('scroller', {
           desktopCompatibility: true
@@ -219,7 +219,7 @@
             this.map.setCenter(this.model.GlatLng());
           }
         } catch (e) {
-          console.error(e);
+
         }
         return MyLocationMarker.__super__.render.apply(this, arguments);
       };
@@ -266,6 +266,7 @@
         Map.__super__.constructor.apply(this, arguments);
       }
       __extends(Map, Backbone.View);
+      Map.prototype.mapId = 'map_canvas';
       Map.prototype.initialize = function() {
         _.bindAll(this, 'render');
         this.map = new google.maps.Map(document.getElementById(this.mapId), {
@@ -429,7 +430,6 @@
       Controller.prototype.map = function() {
         mozogj('#map');
         app.terkepnezet || (app.terkepnezet = new Map({
-          mapId: 'map_canvas',
           collection: app.ketpoi
         }));
         if (!app.terkepnezet.mylocationmarker.marker.getPosition()) {
@@ -442,7 +442,6 @@
           return pageLoading();
         } catch (e) {
           if (localStorage.utvonal != null) {
-            console.log("van útvonal cache-ben");
             $('#utvonaldoboz').html(localStorage.utvonal);
             return mozogj('#masodiklepes');
           } else {
