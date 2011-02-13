@@ -134,7 +134,8 @@ $(document).ready ->
     render: ->
       $(@el).html("<div id='scroller'><ul id='venues'></ul></div>")
       $(@el).css
-        height: window.innerHeight - 78 + 'px'
+        height: (window.innerHeight - 78) + 'px'
+      alert window.innerHeight
       myscroller = new iScroll 'scroller',
         desktopCompatibility: true
       document.addEventListener 'touchmove', (e) ->

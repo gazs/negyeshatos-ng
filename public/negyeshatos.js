@@ -168,6 +168,9 @@
         myscroller = new iScroll('scroller', {
           desktopCompatibility: true
         });
+        document.addEventListener('touchmove', function(e) {
+          return e.preventDefault();
+        }, false);
         this.collection.each(this.addVenueToList);
         $('time.timeago').timeago();
         return this;
