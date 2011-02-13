@@ -40,16 +40,6 @@
           });
         }, this));
       };
-      POI.prototype.setAccuracy = function(acc) {
-        return this.set({
-          'location': {
-            'address': this.getAddress(),
-            'lat': this.getLat(),
-            'lng': this.getLng(),
-            'accuracy': acc
-          }
-        });
-      };
       POI.prototype.getLat = function() {
         return this.get('location').lat;
       };
@@ -92,7 +82,7 @@
         Venues.__super__.constructor.apply(this, arguments);
       }
       __extends(Venues, POIs);
-      Venues.prototype.url = "https://api.foursquare.com/v2/checkins/recent?oauth_token=" + localStorage.token + "&callback=?";
+      Venues.prototype.url = "https://api.foursquare.com/v2/checkins/recent?oauth_token=" + localStorage.token + "&display=touch&callback=?";
       Venues.prototype.parse = function(json) {
         var venyuz;
         if (json.meta.code === 200) {
@@ -164,7 +154,7 @@
       VenueList.prototype.el = $('#venuesList');
       VenueList.prototype.initialize = function() {
         _.bindAll(this, 'render');
-        return this.model.bind('refresh', this.render);
+        return this.collection.bind('refresh', this.render);
       };
       VenueList.prototype.addVenueToList = function(v) {
         var venue;
@@ -175,7 +165,7 @@
       };
       VenueList.prototype.render = function() {
         $(this.el).html("<ul id='venues'></ul>");
-        this.model.each(this.addVenueToList);
+        this.collection.each(this.addVenueToList);
         $('time.timeago').timeago();
         return this;
       };
@@ -270,7 +260,6 @@
         Map.__super__.constructor.apply(this, arguments);
       }
       __extends(Map, Backbone.View);
-      Map.prototype.mapId = 'map_canvas';
       Map.prototype.initialize = function() {
         _.bindAll(this, 'render');
         this.map = new google.maps.Map(document.getElementById(this.mapId), {
@@ -315,7 +304,7 @@
       }
       __extends(LocationInput, Backbone.View);
       LocationInput.prototype.initialize = function() {
-        _.bindAll(this, 'render', 'updateDestination', 'getRoute');
+        _.bindAll(this, 'render', 'updateLocation');
         return this.model.bind('change', this.render);
       };
       LocationInput.prototype.render = function() {
@@ -396,14 +385,13 @@
         'access_token=:token': 'saveToken',
         'error=:err': 'foursquareError',
         'deleteToken': 'deleteToken',
-        'barataim': 'foursquareFriends',
         'terkep': 'map',
         'utvonal': 'bkvRoute'
       };
       Controller.prototype.saveToken = function(token) {
         localStorage.token = token;
         app.venues.url = app.venues.url.replace('undefined', token);
-        return window.location.hash = 'barataim';
+        return window.location.hash = '';
       };
       Controller.prototype.deleteToken = function() {
         delete localStorage.token;
@@ -411,7 +399,7 @@
       };
       Controller.prototype.foursquareError = function(err) {
         alert(err);
-        return window.location.hash = '';
+        return window.location.hash = '#deleteToken';
       };
       Controller.prototype.foursquareFriends = function() {
         mozogj('#elsolepes');
@@ -435,6 +423,7 @@
       Controller.prototype.map = function() {
         mozogj('#map');
         app.terkepnezet || (app.terkepnezet = new Map({
+          mapId: 'map_canvas',
           collection: app.ketpoi
         }));
         if (!app.terkepnezet.mylocationmarker.marker.getPosition()) {
@@ -474,7 +463,6 @@
         return $('body').append(loadingtext);
       }
     };
-    window.historyStack = [];
     window.mozogj = function(toId) {
       var elrendezes, from, fromId;
       elrendezes = ['#elsolepes', '#map', '#masodiklepes'];
@@ -500,7 +488,7 @@
     app.ketpoi = new POIs([app.ittvagyok, app.idemegyek]);
     app.venues = new Venues();
     app.venueslist = new VenueList({
-      model: app.venues
+      collection: app.venues
     });
     app.dirview = new Directions({
       collection: app.ketpoi
@@ -530,7 +518,8 @@
     }, function(error) {
       return app.ittvagyokdoboz.edit();
     }, {
-      enableHighAccuracy: true
+      enableHighAccuracy: true,
+      timeout: 20000
     });
   });
 }).call(this);
