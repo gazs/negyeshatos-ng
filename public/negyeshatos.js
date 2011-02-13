@@ -166,7 +166,7 @@
           height: (window.innerHeight - 78) + 'px'
         });
         myscroller = new iScroll('scroller', {
-          desktopCompatibility: true
+          desktopCompatibility: false
         });
         document.addEventListener('touchmove', function(e) {
           return e.preventDefault();

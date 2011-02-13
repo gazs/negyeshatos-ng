@@ -127,22 +127,28 @@ $(document).ready ->
     initialize: ->
       _.bindAll this, 'render'
       @collection.bind 'refresh', @render
+
+      $(@el).html("<div id='scroller'><ul id='venues'></ul></div>")
+      $(@el).css
+        height: (window.innerHeight - 78) + 'px'
+      @scroller = new iScroll 'scroller',
+        desktopCompatibility: false
+        checkDOMChanges: false
+      document.addEventListener 'touchmove', (e) ->
+        e.preventDefault()
+      , false
+      $(window).bind (if 'onorientation' in window then 'orientationchange' else 'resize'), =>
+        $(@el).css
+          height: window.innerHeight - 78 + 'px' #TODO: lehet ezt dryabbul?
+      
     addVenueToList: (v) ->
       venue = new VenueView
         model: v
       @.$('#venuesList ul').append(venue.render().el)
     render: ->
-      $(@el).html("<div id='scroller'><ul id='venues'></ul></div>")
-      $(@el).css
-        height: (window.innerHeight - 78) + 'px'
-      myscroller = new iScroll 'scroller',
-        desktopCompatibility: true
-      document.addEventListener 'touchmove', (e) ->
-        e.preventDefault()
-      , false
       @collection.each(@addVenueToList)
       $('time.timeago').timeago()
-      @
+      iScroll.refresh()
 
   # Egy pötty egy térképen. Arrébbtehető, ha leteszed, frissíti a modelljének a location paramétereit
   # kell: @map, @model(poi)
