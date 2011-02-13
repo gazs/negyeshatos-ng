@@ -1,32 +1,47 @@
+#Négyeshatos
+#==========
+#
+
+
+# A HTML5 ApplicationCache egészen... érdekes. Papíron tök jó, hogy viszonylag sok adatot tudunk
+# a kliensen tárolni viszonylag megbízhatóan, cserébe viszont fájhat a fejünk az olyan események
+# lekezelésével, hogy például mit kell csinálni, ó jaj, ha frissíteni akarod a cache-ben levő,
+# illetve az onnna betöltött fájlokat. Long story short, ha a cache-frissítő kód rosszul van a
+# becache-elt fájlban, nem fogod tudni meggyőzni sehogyse a makacs böngészőt arról, hogy legyen
+# szíves elfelejteni a hibás fájlt és újratölteni azt, amiben kijavítottad már.
 window.applicationCache.addEventListener 'updateready', ->
   window.location.reload()
 , false
 
-
+# Elméletileg, ha jól értem, nem biztonsági rés az, hogy ide simán behányom a Foursquare-től kapott
+# azonosítókat, mivel ezek csak a megjelölt oldalon használhatóak fel (ha más a használt redirect_url,
+# hibát dob a Foursquare. Szóval kényelem történik. Remélem nem szívom meg ezzel.
 client_ids =
   'localhost:3000': 'LKA10PKSU3VSYT1IONJK53LUAEEZQJQEZLZFTVG13K15FSWR'
   'negyeshatos.com': 'TR01LUT4VNRMYIOUBL0IG214MMUDBL3K0E0O14JTVTBBSJOP'
-
+  # 'negyeshatos.com': '5D10T01NV0LF3X54FS2AW5IVN0CE5UOGE2QF0VLHQZ3T4ORA' #4s-hatos.appspot-é, végső költözés után átírandó
 
 $(document).ready ->
-  # models
+  # A POI a legalapabb egység. Minden POI: hol vagy, hová mész, mire böksz a térképen, mit választasz a listáról
   class POI extends Backbone.Model
     setLocation: (p) ->
       geokod p, (result) =>
         @set
-          'name': undefined
+          'name': undefined # különben ütközhet, ha az idemegyek poi egy venue-tól örökölt már nevet
           'location':
             'address':  result.formatted_address
             'lat':      result.geometry.location.lat()
             'lng':      result.geometry.location.lng()
-            'accuracy': p.accuracy
-    setAccuracy: (acc) ->
-      @set
-        'location':
-          'address': @getAddress()
-          'lat': @getLat()
-          'lng': @getLng()
-          'accuracy': acc
+            'accuracy': p.accuracy # ezzel tudnánk szép karikákat rajzolni, hogy milyen pontos a GPS
+                                   # de sajnos egyelőre több gond van vele, mint amennyit megold, szal
+                                   # ki van kommentelve
+    # setAccuracy: (acc) ->
+    #   @set
+    #     'location':
+    #       'address': @getAddress()
+    #       'lat': @getLat()
+    #       'lng': @getLng()
+    #       'accuracy': acc
       
     getLat: ->
       @get('location').lat
@@ -43,24 +58,31 @@ $(document).ready ->
     GlatLng: (offsetLat=0, offsetLng=0) ->
       new google.maps.LatLng @getLat() + offsetLat, @getLng() + offsetLng
 
-  # collections
+  # Collections
+  # ===========
 
+  # Van olyan, hogy több POI-t egy csokorba fogunk. Sima ügy.
   class POIs extends Backbone.Collection
     model: POI
 
+  # És van olyan, hogy egy csokor POI-t a Foursquare-ről kérünk le. Sima ügy.
   class Venues extends POIs
-    url: "https://api.foursquare.com/v2/checkins/recent?oauth_token=#{localStorage.token}&callback=?"
+    # és mi van, ha nincs localStorage.token? Emiatt később fog fájni a fejünk, lásd lennebb
+    url: "https://api.foursquare.com/v2/checkins/recent?oauth_token=#{localStorage.token}&display=touch&callback=?"
     parse: (json) ->
       if json.meta.code is 200
         venyuz = []
         _(json.response.recent).map (checkin) ->
+          # Van olyan checkin, ami nem is checkin, hanem pl shout. Ehhez nem tartozik latlng
           if checkin.type is 'checkin'
+            # Van már ilyen venue? Frissítsd ki van itt & mikor jelentkeztek be utoljára
             try
               venyu = _(venyuz).detect (v) ->
                 return v.name is checkin.venue.name
               venyu.here.push checkin.user
               if venyu.lastSeen < checkin.createdAt
                 venyu.lastSeen = checkin.createdAt
+            # Nincs? Add hozzá.
             catch e
               venyuz.push
                 name: checkin.venue.name
@@ -72,10 +94,12 @@ $(document).ready ->
         alert 'foursquare hiba'
 
 
-  # views
+  # Views
+  # =====
 
+  # Egy Venue csíkban megjelenítve
+  # kell neki: @el, @model(POI)
   class VenueView extends Backbone.View
-    #el kell még bele
     tagName: 'li'
     className: 'venue'
     template: _.template($('#venueTemplate').html())
@@ -96,22 +120,25 @@ $(document).ready ->
       $(@el).html(@template(@model.toJSON()))
       this
 
+  # Több Venue listája
+  # kell: @el, @collection(venues)
   class VenueList extends Backbone.View
     el: $('#venuesList')
     initialize: ->
       _.bindAll this, 'render'
-      @model.bind 'refresh', @render
+      @collection.bind 'refresh', @render
     addVenueToList: (v) ->
       venue = new VenueView
         model: v
       @.$('#venuesList ul').append(venue.render().el)
     render: ->
       $(@el).html("<ul id='venues'></ul>")
-      @model.each(@addVenueToList)
+      @collection.each(@addVenueToList)
       $('time.timeago').timeago()
       @
 
-  # {map: map}
+  # Egy pötty egy térképen. Arrébbtehető, ha leteszed, frissíti a modelljének a location paramétereit
+  # kell: @map, @model(poi)
   class Marker extends Backbone.View
     initialize: (options) ->
       _.bindAll @, 'render'
@@ -128,6 +155,8 @@ $(document).ready ->
       @marker.setPosition @model.GlatLng()
       @marker.setTitle @model.getAddress()
 
+  # Az a pötty a térképen, ami megmutatja, hol vagy. Annyiban különbözik a másiktól, hogy más ikonja van.
+  # Tudná a GPS pontosságát is jelölni egy körrel, csak az több gondot okozott, mint amennyit megoldott.
   class MyLocationMarker extends Marker
     initialize: (options) ->
       @markerImage = new google.maps.MarkerImage(
@@ -155,7 +184,8 @@ $(document).ready ->
       catch e
         console.error e
       super
-
+  
+  # Piros gombostű formájú marker, amit ha leraksz, infobubble-t nyit, benne a POI címével
   class DestinationMarker extends Marker
     initialize: (options) ->
       super(options)
@@ -183,8 +213,11 @@ $(document).ready ->
       @marker.setIcon('img/pin.png')
       super
 
+  # Egy térkép, ami két markert bír el. Az első marker kék bogyó (itt vagy), a másik piros tű (ide mész)
+  # Ha elfordítod a készüléket, átméretezi magát. (Ha nem teljes képernyőn van a térkép, a scroll események
+  # csúnyáncsúnyán be tudnak kavarni!
+  # @mapId, @collection(kétpoi)
   class Map extends Backbone.View
-    mapId: 'map_canvas'
     initialize: ->
       _.bindAll @, 'render'
       @map = new google.maps.Map document.getElementById(@mapId),
@@ -211,11 +244,12 @@ $(document).ready ->
       try
         @destinationmarker.render()
 
+  # Form, benne egy (1) szöveginputtal, aminek a submitjekor beállítja a hozzá kapcsolódó modell helyparamétereit
+  # @el(form), @model(poi)
   class LocationInput extends Backbone.View
     initialize: ->
-      _.bindAll @, 'render', 'updateDestination', 'getRoute'
+      _.bindAll @, 'render', 'updateLocation'
       @model.bind 'change', @render
-      #@model.bind 'change', @getRoute
     render: ->
       $(@el).find('input').val(@model.getAddress())
     events:
@@ -225,7 +259,8 @@ $(document).ready ->
         address: $(@el).find('input').val()
       window.location.hash = 'utvonal'
 
-  # el
+  # Szövegdoboz, amire 1. mutatja hol vagy 2. rákattintva felpattanó ablakban állíthatod, hol vagy
+  # @el, @model(poi)
   class LocationDisplay extends Backbone.View
     initialize: ->
       _.bindAll @, 'render'
@@ -238,7 +273,7 @@ $(document).ready ->
       newaddress = prompt 'hol vagy?', @model.getAddress()
       @model.setLocation({address:newaddress}) if newaddress
 
-
+  # Ez gyakorlatilag a második lépés. Nem csinál sokat, meghívja a bkv-s segédcuccot, majd beleömleszti a sablonba a választ.
   class Directions extends Backbone.View
     el: $("#utvonaldoboz")
     template: _.template($('#routeTemplate').html())
@@ -261,43 +296,47 @@ $(document).ready ->
         pageLoading(1)
 
 
-  # controllers
+  # Controller
+  # ==========
+
   class Controller extends Backbone.Controller
     routes:
       '': 'foursquareFriends'
       'access_token=:token': 'saveToken'
       'error=:err': 'foursquareError'
       'deleteToken': 'deleteToken'
-      'barataim': 'foursquareFriends'
       'terkep': 'map'
       'utvonal': 'bkvRoute'
+    # Induláskor nem volt token, a Collection viszont már elkészült. Muszáj felülírnunk.
     saveToken: (token) ->
       localStorage.token = token
       app.venues.url = app.venues.url.replace 'undefined', token
-      window.location.hash = 'barataim'
+      window.location.hash = ''
     deleteToken: ->
       delete localStorage.token
       window.location.hash = ''
     foursquareError: (err) ->
       alert err
-      window.location.hash = ''
+      window.location.hash = '#deleteToken'
     foursquareFriends: ->
-      mozogj '#elsolepes' #todo: jó irányba legyen a mozgás
+      mozogj '#elsolepes'
       if debug? or localStorage.token
         pageLoading()
         app.venues.fetch
           success: -> pageLoading("done")
       else
         try
-          $("#foursquare").html _.template $('#loginTemplate').html(), 
+          $("#foursquare").html _.template $('#loginTemplate').html(),
           client_id: client_ids[window.location.host]
         catch e
           alert "nem találtam megfelelő foursquare kulcsot."
     map: ->
       mozogj '#map'
-      # hackish
+      # Ne csináld újra a térképet 
       app.terkepnezet ||= new Map
+        mapId: 'map_canvas'
         collection: app.ketpoi
+      # Ha nincs markerem, akkor ne próbáld átrakni sehova.
       unless app.terkepnezet.mylocationmarker.marker.getPosition()
         app.terkepnezet.render()
     bkvRoute: ->
@@ -317,11 +356,17 @@ $(document).ready ->
   # etc
   # ---
   #
+
+  # Aranymetszés. Figyeltétek, hogy Macen az alert ablakok nem pontosan középen vannak, hanem kicsit... odébb?
+  # Aranymetszés. Elvileg ettől sokkal szebb és esztétikusabb lesz, ha ide rakom. Próbacseresznye.
   window.goldenRatio = (aplusb) ->
     (aplusb - aplusb/1.6803)
 
+  #Loading spinner. Ez lesz ugye aranymetszés szerint elhelyezve.
   window.pageLoading = (done) ->
     if done?
+      # Szerintem itt van egy zepto bug. Nem lehet simán azt mondani, hogy $('#a').remove(), de miért?
+      # Fenébe a szintaktikus cukorral.
       document.body.removeChild document.getElementById 'a'
     else
       loadingtext = $('<div class="loading" id="a"><img src="img/loading.gif"></div>')
@@ -331,7 +376,7 @@ $(document).ready ->
         'top': window.pageYOffset + goldenRatio(window.innerHeight) + 'px'
       $('body').append loadingtext
 
-  window.historyStack = []
+  # Csúnyán hardkódolt mozgásirányokkal. Az általánosabb megoldáshoz nincsen elég agysejtem.
   window.mozogj = (toId) ->
     # balról jobbra
     elrendezes = ['#elsolepes', '#map', '#masodiklepes']
@@ -349,6 +394,9 @@ $(document).ready ->
       $(toId).removeClass('reverse').addClass('current')
 
 
+  # TODO: ez így nem szép. Hogyan szép? Biztos van rá valami pattern vagy okosság vagy egyéb,
+  # ehelyett ide beömlesztek mindent egy kupacba. De legalább csak egy változót szemetelek még bele
+  # a globális térbe.
   window.app = {}
   app.ittvagyok= new POI
     location:
@@ -359,7 +407,7 @@ $(document).ready ->
   app.ketpoi= new POIs [app.ittvagyok, app.idemegyek]
   app.venues= new Venues()
   app.venueslist= new VenueList
-    model: app.venues
+    collection: app.venues
   app.dirview= new Directions
     collection: app.ketpoi
   app.ittvagyokdoboz= new LocationDisplay
@@ -370,13 +418,14 @@ $(document).ready ->
     model: app.idemegyek
   app.controller= new Controller()
 
+  # Ha nincs ez, nem fog sose elindulni a hashtag varázs
   Backbone.history.start()
 
+  # Ha neadj' valaha szeretnék device-specifikus css-t
   if $.os.ios
     $('body').addClass('ios')
   if $.os.android
     $('body').addClass('android')
-
 
   navigator.geolocation.getCurrentPosition(
     (position) ->
@@ -386,7 +435,7 @@ $(document).ready ->
         accuracy: position.coords.accuracy
     (error) ->
       app.ittvagyokdoboz.edit()
-    {enableHighAccuracy: true}
+    {enableHighAccuracy: true, timeout: 20000}
   )
   
 
